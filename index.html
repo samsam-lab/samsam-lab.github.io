@@ -1,45 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Plant Watering App</title>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <title>Can you eat it?</title>
   <style>
-    body {
-      font-family: "Helvetica", Arial, sans-serif;
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .input-container {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 200px;
+      padding: 5px;
+      margin-right: 5px;
+    }
+
+    button {
+      padding: 5px 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Plant Watering App</h1>
-  
-  <form>
-    <label for="plantName">Enter Plant Name:</label>
-    <input type="text" id="plantName" name="plantName">
-    <button type="button" onclick="searchPlant()">Search</button>
-  </form>
-
-  <div id="result"></div>
+  <div class="container">
+    <h1>Can you eat it?</h1>
+    <div class="input-container">
+      <label for="plantName">Enter the name of a plant:</label>
+      <input type="text" id="plantName" />
+      <button onclick="checkEdibility()">Check</button>
+    </div>
+    <div id="result"></div>
+  </div>
 
   <script>
-    function searchPlant() {
-      var plantNameInput = document.getElementById("plantName").value;
-      var apiKey = "3WtATJQS42JzYPE0mKhqYCobZCFbzZ6niAr0Kl6nZf8"; // Replace with your Trefle API key
+    function checkEdibility() {
+      var plantName = document.getElementById("plantName").value;
+      var resultContainer = document.getElementById("result");
 
-      // Make an API request
-      axios.get(`https://trefle.io/api/v1/plants/search?token=${apiKey}&q=${plantNameInput}`)
+      // Replace 'YOUR_API_KEY' with your actual API key from Trefle
+      var apiKey = '3WtATJQS42JzYPE0mKhqYCobZCFbzZ6niAr0Kl6nZf8';
+      var url = `https://trefle.io/api/plants?q=${plantName}&token=${apiKey}`;
+
+      resultContainer.innerHTML = "Searching...";
+
+      fetch(url)
         .then(function(response) {
-          // Process the API response and extract watering information
-          var wateringFrequency = response.data.data[0].watering_interval;
-          displayResult(wateringFrequency);
+          return response.json();
+        })
+        .then(function(data) {
+          if (data.data && data.data.length > 0) {
+            var plant = data.data[0];
+            var commonName = plant.common_name;
+            var isEdible = plant.edible;
+
+            if (isEdible) {
+              resultContainer.innerHTML = `The plant '${commonName}' is edible.`;
+            } else {
+              resultContainer.innerHTML = `The plant '${commonName}' is not edible.`;
+            }
+          } else {
+            resultContainer.innerHTML = "Plant not found.";
+          }
         })
         .catch(function(error) {
-          console.log(error);
+          resultContainer.innerHTML = `An error occurred: ${error}`;
         });
-    }
-
-    function displayResult(wateringFrequency) {
-      var resultContainer = document.getElementById("result");
-      resultContainer.textContent = `Water this plant approximately every ${wateringFrequency} days.`;
     }
   </script>
 </body>
